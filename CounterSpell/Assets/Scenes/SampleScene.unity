@@ -383,6 +383,7 @@ GameObject:
   - component: {fileID: 238111441}
   - component: {fileID: 238111440}
   - component: {fileID: 238111439}
+  - component: {fileID: 238111444}
   m_Layer: 0
   m_Name: Mob
   m_TagString: Mob
@@ -404,7 +405,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   zoomSpeed: 2
   targetOrthographicSize: 3
-  uiCanvas: {fileID: 0}
+  uiCanvas: {fileID: 38224029}
 --- !u!50 &238111440
 Rigidbody2D:
   serializedVersion: 4
@@ -534,6 +535,27 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!95 &238111444
+Animator:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 238111438}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 33c3ef86f573dab4296cb7cac136a41d, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0
