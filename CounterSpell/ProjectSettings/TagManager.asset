@@ -5,15 +5,16 @@ TagManager:
   serializedVersion: 2
   tags:
   - Mob
+  - Dummy
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - ground
   - Water
   - UI
-  - 
-  - 
+  - workspace
+  - background
   - 
   - 
   - 
@@ -39,12 +40,12 @@ TagManager:
   - 
   - 
   m_SortingLayers:
+  - name: background
+    uniqueID: 3829342737
+    locked: 0
   - name: Default
     uniqueID: 0
     locked: 0
-  - name: New Layer 1
-    uniqueID: 3829342737
-    locked: 0
-  - name: New Layer 2
+  - name: workspace
     uniqueID: 694534191
     locked: 0
