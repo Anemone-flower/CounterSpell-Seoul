@@ -1,52 +1,164 @@
 using UnityEngine;
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine.UI; 
 
 public class Dummy : MonoBehaviour
 {
-    public float health = 50f;  // 더미 체력
-    public float damage = 10f;  // 더미의 공격력
-    public float damageTaken = 0f;  // 더미가 받은 피해
+    [Header("Stats")]
+    [SerializeField] private float maxHealth = 50f;
+    [SerializeField] private float damage = 10f;
+    [SerializeField] private float moveSpeed = 2f;
+    [SerializeField] private float attackRange = 1.5f;
+
+    [Header("Combat Settings")]
+    [SerializeField] private float attackCooldown = 1f;
+    [SerializeField] private float invincibilityDuration = 0.5f;
+    [SerializeField] private Color hitColor = new Color(1f, 0.5f, 0.5f, 1f);
+    [SerializeField] private float colorChangeDuration = 0.2f;
+
+    private float currentHealth;
+    public float damageTaken { get; private set; }
+
+    private bool isInvincible;
+    private bool isAttacking;
 
     private Transform player;
+    private SpriteRenderer spriteRenderer;
+    private Color originalColor;
 
-    void Start()
+    private bool destroyedInConfusion; // 혼란 상태에서 처치 여부
+
+    private void Awake()
     {
-        player = GameObject.FindWithTag("Player").transform;  // 플레이어 찾기
+        InitializeComponents();
     }
 
-    void Update()
+    private void Start()
     {
-        if (player != null)
+        InitializeStats();
+    }
+
+    private void InitializeComponents()
+    {
+        spriteRenderer = GetComponent<SpriteRenderer>();
+        if (spriteRenderer == null)
         {
-            // 더미가 플레이어를 공격하도록 이동
-            MoveTowardsPlayer();
-            AttackPlayer();
+            Debug.LogError($"[{gameObject.name}] SpriteRenderer component is missing!");
+            enabled = false;
+            return;
         }
+        originalColor = spriteRenderer.color;
     }
 
-    void MoveTowardsPlayer()
+    private void InitializeStats()
     {
-        float step = 2f * Time.deltaTime;  // 더미가 이동할 속도
+        currentHealth = maxHealth;
+        isInvincible = false;
+        player = GameObject.FindWithTag("Player")?.transform;
+
+        if (player == null)
+        {
+            Debug.LogError($"[{gameObject.name}] Player not found in scene!");
+            enabled = false;
+        }
+
+        destroyedInConfusion = false; // 초기화
+    }
+
+    private void Update()
+    {
+        if (player == null || isAttacking) return;
+
+        MoveTowardsPlayer();
+        CheckForAttack();
+    }
+
+    private void MoveTowardsPlayer()
+    {
+        float step = moveSpeed * Time.deltaTime;
         transform.position = Vector3.MoveTowards(transform.position, player.position, step);
     }
 
-    void AttackPlayer()
+    private void CheckForAttack()
     {
-        // 더미가 플레이어에 근접하면 공격
-        if (Vector3.Distance(transform.position, player.position) < 1.5f)
+        if (Vector3.Distance(transform.position, player.position) < attackRange)
         {
-            // 플레이어에게 공격
-            // 예: 플레이어 체력 감소 (플레이어의 체력 관리 시스템 필요)
-            Debug.Log("더미가 플레이어를 공격");
+            StartCoroutine(AttackRoutine());
         }
     }
 
-    public void TakeDamage(float amount)
+    private IEnumerator AttackRoutine()
     {
-        health -= amount;
-        damageTaken += amount;  // 받은 피해 기록
-        if (health <= 0)
+        isAttacking = true;
+
+        PlayerController playerController = player.GetComponent<PlayerController>();
+        if (playerController != null)
         {
-            Destroy(gameObject);  // 더미 처치
+            playerController.TakeDamage(damage);
+            Debug.Log($"[{gameObject.name}] Dealt {damage} damage to Player");
+        }
+
+        yield return new WaitForSeconds(attackCooldown);
+        isAttacking = false;
+    }
+
+    public void TakeDamage(float incomingDamage)
+    {
+        if (isInvincible)
+        {
+            Debug.Log($"[{gameObject.name}] Damage blocked by invincibility");
+            return;
+        }
+
+        currentHealth -= incomingDamage;
+        damageTaken += incomingDamage;
+
+        Debug.Log($"[{gameObject.name}] Took {incomingDamage} damage. Current health: {currentHealth}");
+
+        StartCoroutine(HitRoutine());
+
+        if (currentHealth <= 0)
+        {
+            Die();
         }
     }
+
+    private IEnumerator HitRoutine()
+    {
+        isInvincible = true;
+        spriteRenderer.color = hitColor;
+
+        yield return new WaitForSeconds(colorChangeDuration);
+        spriteRenderer.color = originalColor;
+
+        yield return new WaitForSeconds(invincibilityDuration - colorChangeDuration);
+        isInvincible = false;
+
+        Debug.Log($"[{gameObject.name}] Invincibility ended");
+    }
+
+    public void MarkAsDestroyedInConfusion()
+    {
+        destroyedInConfusion = true;
+    }
+
+    private void Die()
+    {
+        Debug.Log($"[{gameObject.name}] has been destroyed");
+        Destroy(gameObject);
+    }
+
+    public bool IsDestroyedInConfusion() => destroyedInConfusion;
+
+    public float GetDamageTaken() => damageTaken;
+
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(transform.position, attackRange);
+    }
+
+    public float GetCurrentHealth() => currentHealth;
+    public float GetMaxHealth() => maxHealth;
 }
